@@ -1,0 +1,129 @@
+version: '2.2'
+services:
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+       - ./redis/data:/data
+    networks:
+      c0banparty:
+        ipv4_address: 172.16.211.2
+  mongodb:
+    image: mongo:3.6.5
+    container_name: mongodb
+    volumes:
+      - './mongodb:/data'
+    ports:
+      - '27017:27017'
+    networks:
+      c0banparty:
+        ipv4_address: 172.16.211.4
+  c0ban:
+    container_name: c0ban
+    image: c0ban
+    build:
+      context: ./c0ban
+    volumes:
+       - ./c0ban:/c0ban
+    networks:
+      c0banparty:
+        ipv4_address: 172.16.211.3
+    command: c0band -server -regtest -listen -txindex -rpcallowip=0.0.0.0/0 -zmqpubhashtx=tcp://0.0.0.0:38832 -zmqpubhashblock=tcp://0.0.0.0:38832 -rpcuser=test -rpcpassword=test -connect=172.16.211.13:23881 -debug -maxtipage=99999999999
+  c0ban-sub:
+    container_name: c0ban-sub
+    image: c0ban
+    volumes:
+       - ./c0ban:/c0ban
+    links:
+      - c0ban
+    networks:
+      c0banparty:
+        ipv4_address: 172.16.211.13
+    command: c0band -server -regtest -listen -txindex -rpcallowip=0.0.0.0/0 -zmqpubhashtx=tcp://0.0.0.0:38832 -zmqpubhashblock=tcp://0.0.0.0:38832 -rpcuser=test -rpcpassword=test -connect=172.16.211.3:23881 -debug -maxtipage=99999999999
+  indexd:
+    container_name: indexd
+    image: indexd
+    build:
+      context: ./indexd
+      # args:
+      #   ENV_FILE: ".env-mainnet-aws"
+    volumes:
+      - ./indexd:/indexd
+      - /indexd/node_modules
+    environment:
+      - NETWORK_COIN=c0ban
+    ports:
+      - "28432:8432"
+    links:
+      - c0ban
+      - c0ban-sub
+    command: start.sh
+    networks:
+      c0banparty:
+        ipv4_address: 172.16.211.5
+  counterparty-server:
+    container_name: counterparty-server
+    image: counterparty-server
+    build:
+      context: ./counterparty
+    volumes:
+      - ./counterparty/counterparty-lib:/counterparty-lib
+      - ./counterparty/counterparty-cli:/counterparty-cli
+    environment:
+      - PARAMS=--indexd-connect=indexd --backend-user=test --backend-password=test --backend-connect=c0ban --rpc-host=0.0.0.0 --regtest
+    links:
+      - c0ban
+      - c0ban-sub
+      - indexd
+    ports:
+      - "24000:4000"
+    command: start.sh
+    networks:
+      c0banparty:
+        ipv4_address: 172.16.211.6
+  counterblock:
+    container_name: counterblock
+    image: counterblock
+    build:
+      context: ./counterblock
+    links:
+      - counterparty-server
+      - redis
+      - mongodb
+    volumes:
+      - './counterblock:/counterblock'
+    environment:
+      - PARAMS=--redis-connect=redis --counterparty-connect=counterparty-server --backend-connect=c0ban --backend-user=test --backend-password=test --mongodb-connect=mongodb --regtest
+    ports:
+      - "24100:4100"
+    command: start.sh
+    networks:
+      c0banparty:
+        ipv4_address: 172.16.211.7
+  counterwallet:
+    container_name: counterwallet
+    image: counterwallet
+    build:
+      context: ./counterwallet
+    ports:
+      - "28080:80"
+      - "28443:443"
+    volumes:
+      - ./counterwallet:/counterwallet
+      - /counterwallet/node_modules
+    links:
+        - redis
+        - counterblock
+    command: start.sh
+    networks:
+      c0banparty:
+        ipv4_address: 172.16.211.8
+networks:
+  c0banparty:
+    driver: bridge
+    ipam:
+     driver: default
+     config:
+       - subnet: 172.16.211.0/24
