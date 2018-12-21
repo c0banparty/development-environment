@@ -32,10 +32,13 @@ git clone https://github.com/c0banparty/counterblock.git
 git clone https://github.com/c0banparty/counterwallet.git
 cd ./counterwallet
 git submodule update -i
+cd ..
 
+
+### build c0ban party
+# docker-compose build
 
 ### lunch c0ban party
-docker-compose build
 # docker-compose up -d counterwallet
 
 
