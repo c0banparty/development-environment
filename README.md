@@ -5,7 +5,9 @@
 ### Setup Source
 
 ```
-$ ./start.sh
+$ git clone https://github.com/c0banparty/development-environment.git development
+$ cd development
+$ ./setup.sh
 ```
 
 ### Build
