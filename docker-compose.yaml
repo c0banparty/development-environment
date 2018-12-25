@@ -46,11 +46,11 @@ services:
     container_name: indexd
     image: indexd
     build:
-      context: ./indexd
+      context: ./indexd-server
       # args:
       #   ENV_FILE: ".env-mainnet-aws"
     volumes:
-      - ./indexd:/indexd
+      - ./indexd-server:/indexd
       - /indexd/node_modules
     environment:
       - NETWORK_COIN=c0ban
