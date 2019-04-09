@@ -84,6 +84,6 @@ git clone https://github.com/c0banparty/c0banparty-test.git
 
 4. Run docker container & test
 ```
-docker-compose run e2e-test bash
+docker-compose run c0banparty-test bash
 $ npm test
 ```
