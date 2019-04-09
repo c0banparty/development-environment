@@ -69,3 +69,21 @@ c0band
 ### Access to Counterwallet-c0ban
 
 https://localhost:28443/?regtest=1
+
+### Test
+
+1. Run c0banparty in regtest mode.
+https://github.com/c0banparty/development-environment#how-to-setup-development-environment
+
+2. Generate 300 blocks in c0band to change PoW Algorithm to lyra2rc0ban
+
+3. Clone test source
+```
+git clone https://github.com/c0banparty/c0banparty-test.git
+```
+
+4. Run docker container & test
+```
+docker-compose run e2e-test bash
+$ npm test
+```

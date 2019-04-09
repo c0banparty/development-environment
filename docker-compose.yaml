@@ -120,6 +120,33 @@ services:
     networks:
       c0banparty:
         ipv4_address: 172.16.211.8
+  c0banparty-test:
+    container_name: c0banparty-test
+    image: c0banparty-test
+    build:
+      context: ./c0banparty-test
+    volumes:
+       - ./c0banparty-test:/c0banparty-test
+      #  - /e2e-test/node_modules
+    command: npm test
+    links:
+        - counterwallet
+    environment:
+      - TEST_ADDRESS=mqhVXc7mCdKRQPMwrrDUjEnD3oeo5PBQSY
+      - TEST_PUBLICKEY=03465bd6141cd7941d34b485890c94f24f9116421e8dd4cf3fa0f09fc6dd1dfcc3
+      - TEST_PRIVATEKEY=cPdQCTsmW3snywgH6fr2QyH9YZU641jPo63S1jw4PvyD8bmV42r2
+      # - HOLDER_ADDRESS=ms3GcynGwcoabjwU46Z7QskzE9nB1fUpED
+      # - HOLDER_PRIVATEKEY=cP6oSRAXHKsi7117CAEmvnN3SQ98kS8kqGvVetscGD2vTZQ9a95u
+      # - NON_HOLDER_ADDRESS=mzVUZPsWs5ucocBdZqX8upAXxtBW9E4osh
+      # - NON_HOLDER_PRIVATEKEY=cW4WkkL9PafECrLViD1X33aFndMwLHs9XAwjovGJgJgAa5LMTjjK
+      - C0BAN_HOST=172.16.211.3
+      - C0BAN_RPC_PORT=23882
+      - COUNTERBLOCK_HOST=172.16.211.7
+      - COUNTERBLOCK_PORT=24100
+      - WEB_HOST=172.16.211.8
+    networks:
+      c0banparty:
+        ipv4_address: 172.16.211.20
 networks:
   c0banparty:
     driver: bridge
